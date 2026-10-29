@@ -1,0 +1,12 @@
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+.neural-venv/
+models/
+voice-cache/
+artifacts/
+.env
+
+docs/TTS-REVISION.md
+docs/voice-feasibility.md

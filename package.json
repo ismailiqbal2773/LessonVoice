@@ -1,0 +1,14 @@
+{
+  "name": "lessonvoice",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Offline neural English and Urdu classroom learning packs",
+  "license": "GPL-3.0-or-later",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "python -m lessonvoice.server",
+    "check:js": "node --check web/app.js"
+  }
+}

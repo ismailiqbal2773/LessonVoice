@@ -1,0 +1,7 @@
+* text=auto eol=lf
+*.wav binary
+*.zip binary
+*.jpg binary
+*.png binary
+*.mp4 binary
+licenses/* -whitespace
