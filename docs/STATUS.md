@@ -1,7 +1,5 @@
-# Delivery status —29 October2026
+# Status — 30 October 2026
 
-Implemented and locally validated: offline neural English/Urdu audio packs; four voice-character presets; draft persistence/import/export; editable sections/pronunciations/questions; voice-bound audio signatures; safe ZIP export; responsive interface and interactive workflow.
+Local demonstration update implemented. 55 tests pass; JavaScript syntax valid. Actual English/Urdu 64-step synthesis, Urdu playback and browser ZIP downloads verified. ZIP CRC and latest server export provenance validated. Optional ElevenLabs v3 paid mode implemented with request-only key, explicit consent and documented setup. Paid adapter is fixture-tested, not live synthesized with a funded key. Model choice is based on English/Urdu compatibility; no comparative human naturalness benchmark. Known dependency advisories and noncommercial local model restrictions remain. See VALIDATION.md and SECURITY.md.
 
-50 automated tests pass and real browser/worker generation checks completed. This is a local trusted-user noncommercial demonstration, not a production/public deployment. Known dependency advisories, hardware limits and pronunciation uncertainty are documented in SECURITY.md and VALIDATION.md. No clean vulnerability scan or all-device/zero-bug guarantee is made.
-
-GitHub and LinkedIn delivery references are added only after remote verification.
+32s 1080x1080 H264/AAC video rendered with current browser capture and complete current model samples. HyperFrames check passed; decoded frame inspected; audio signal measured (mean -22.8 dB, peak -5.9 dB on prior same-length render; final sound checked separately). LinkedIn draft prepared, not published in this update. No claim that all possible features/devices are bug-free.

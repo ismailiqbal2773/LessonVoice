@@ -30,3 +30,5 @@ Install using README, launch server, generate English/Urdu samples, play before 
 - Previous independent security review predates paid mode. Known upstream advisories and local noncommercial demo restrictions still apply.
 
 - Additional current browser checks: teacher question/answer entry, Urdu pronunciation replacement (“پانی” → “صاف پانی”) in spoken-text preview, missing paid API key error, draft restoration on reload and reset to local provider with empty key. Phone-width measurement (390px) showed no horizontal overflow. Tablet screenshot capture was interrupted; previous tablet evidence is dated above, not recertified here.
+
+- Final current server HTTP smoke: exported actual generated English WAV with `speechSource` metadata, CRC clean; paid preview without credentials returns 400. Final video: 32s, 1080×1080 H264/AAC; complete 5.32s English and 2.28s Urdu samples placed without cuts; HyperFrames check passes. Decoded paid-settings frame inspected.

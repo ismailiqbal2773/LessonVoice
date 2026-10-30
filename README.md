@@ -104,3 +104,7 @@ The [validation record](docs/VALIDATION.md) distinguishes automated checks, brow
 Created for [Muhammad Ismail](https://www.linkedin.com/in/muhammad-ismail-iqbal/). Research inspiration: [VoiceStudio](https://github.com/debpalash/VoiceStudio)'s local voice-workflow direction. **No VoiceStudio code or models are included.** LessonVoice's addition is the teacher workflow, editable sections, pronunciation review, classroom questions and inspectable learning-pack export.
 
 LessonVoice application source: **GPL-3.0-or-later**, see [LICENSE](LICENSE). OmniVoice library code: Apache-2.0. Pretrained OmniVoice weights: upstream **CC-BY-NC** designation. Higgs tokenizer: Boson Higgs Audio 2 Community License Agreement incorporating Meta Llama 3 terms. These licenses are distinct; neither weights nor tokenizer are represented as GPL. Attribution, official copies and source references are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and `licenses/`.
+
+## Demo and sharing
+
+[Watch/download the 32-second demo](docs/lessonvoice-update-20261030.mp4) · [Editable video source](docs/video-source/README.md) · [LinkedIn caption draft](docs/linkedin-post.md). The demo shows real browser playback and optional paid settings, with actual English/Urdu 64-step samples. Video is edited for pace, not a generation-speed benchmark. The caption is prepared; no LinkedIn publication is claimed in this update.
