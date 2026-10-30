@@ -107,4 +107,4 @@ LessonVoice application source: **GPL-3.0-or-later**, see [LICENSE](LICENSE). Om
 
 ## Demo and sharing
 
-[Watch/download the 32-second demo](docs/lessonvoice-update-20261030.mp4) · [Editable video source](docs/video-source/README.md) · [LinkedIn caption draft](docs/linkedin-post.md). The demo shows real browser playback and optional paid settings, with actual English/Urdu 64-step samples. Video is edited for pace, not a generation-speed benchmark. The caption is prepared; no LinkedIn publication is claimed in this update.
+[Watch/download the 32-second demo](docs/lessonvoice-update-20261030.mp4) · [Editable video source](docs/video-source/README.md) · [Published LinkedIn caption](docs/linkedin-post.md). The demo shows real browser playback and optional paid settings, with actual English/Urdu 64-step samples. Video is edited for pace, not a generation-speed benchmark. [LinkedIn video post](https://www.linkedin.com/feed/update/urn:li:activity:7521785671770861569/) published and verified on 30 October 2026.
