@@ -44,7 +44,9 @@ function setBusy(value){
   $('workspace').querySelectorAll('button,input,textarea,select').forEach(e=>{if(!e.closest('#settings-fields'))e.disabled=value;});
   updateSummary();
 }
+function speechOptions(){return {provider:$('speech-provider').value,apiKey:$('cloud-key').value,voiceId:$('cloud-voice').value,consent:$('cloud-consent').checked};}
 async function request(path,data,kind='json'){
+  if(data&&['/api/audio','/api/voice-preview'].includes(path))data={...data,speech:speechOptions()};
   const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),['/api/audio','/api/voice-preview'].includes(path)?900000:120000);
   try{
     const response=await fetch(path,{...(data!==undefined?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}:{}),signal:controller.signal});
@@ -106,7 +108,7 @@ function renderQuestions(){
 }
 function render(){
   $('lesson-title').value=project.title;$('language').value=project.language;$('rate').value=project.rate;$('voice').value=project.voice;$('rate-value').textContent=project.rate;$('lesson-text').value=sourceText;$('source-count').textContent=`${Array.from(sourceText).length.toLocaleString()} / 20,000`;
-  $('language-note').textContent=project.language==='ur'?'Use native-script Urdu. Neural pronunciation varies; listen before sharing. No automatic translation.':'Offline neural speech. Install the model once, then generate on your own computer. CPU generation can take several minutes.';
+  $('language-note').textContent=project.language==='ur'?'Use native-script Urdu. Neural pronunciation varies; listen before sharing. No automatic translation.':'Offline uses 64 synthesis steps for quality; CPU generation can take several minutes. Optional paid mode uses the API settings above.';
   renderRules();renderQuestions();renderChapters();updateSummary();
 }
 async function spokenSnapshot(){
@@ -121,7 +123,7 @@ async function generate(ids){
   if(!engine.languages?.includes(project.language))throw Error('The selected language is unavailable in this voice engine.');
   const prepared=await spokenSnapshot();const list=prepared.sections.filter(s=>ids.includes(s.id));$('generation-progress').hidden=false;$('generation-progress').max=list.length;$('generation-progress').value=0;
   try{for(const [index,section]of list.entries()){
-    const chapter=prepared.snapshot.sections.find(s=>s.id===section.id);status(`Generating ${index+1} of ${list.length}: ${chapter.title}… Neural speech runs locally; CPU generation may take several minutes.`);
+    const chapter=prepared.snapshot.sections.find(s=>s.id===section.id);status(`Generating ${index+1} of ${list.length}: ${chapter.title}… Using selected engine; generation may take several minutes.`);
     const key=JSON.stringify([prepared.snapshot.language,prepared.snapshot.rate,prepared.snapshot.voice,section.text]);const signature=await hash(key);
     const blob=await request('/api/audio',{project:prepared.snapshot,sectionId:section.id},'blob');
     if(prepared.stamp!==revision)throw Error('The lesson changed. Generated audio was discarded; please try again.');
@@ -134,11 +136,11 @@ async function base64(blob){const bytes=new Uint8Array(await blob.arrayBuffer())
 async function exportPack(){
   const prepared=await spokenSnapshot(),audio=[];
   for(const s of prepared.sections){const cached=audioCache.get(s.id),key=JSON.stringify([prepared.snapshot.language,prepared.snapshot.rate,prepared.snapshot.voice,s.text]);if(!cached||cached.signature!==await hash(key))throw Error('Some chapters have missing or outdated audio. Generate them again before exporting.');audio.push({id:s.id,data:await base64(cached.blob),signature:cached.signature});}
-  status('Assembling audio, transcripts and teacher answer key…');const blob=await request('/api/export',{project:prepared.snapshot,audio},'blob');if(prepared.stamp!==revision)throw Error('Lesson changed during export. Please export again.');download(blob,'lessonvoice-pack.zip');status('Learning pack downloaded. Check the separate answer key before sharing with students.');selectStep(6);
+  status('Assembling audio, transcripts and teacher answer key…');const blob=await request('/api/export',{project:prepared.snapshot,audio,speechSource:{provider:$('speech-provider').value,voiceId:$('cloud-voice').value}},'blob');if(prepared.stamp!==revision)throw Error('Lesson changed during export. Please export again.');download(blob,'lessonvoice-pack.zip');status('Learning pack downloaded. Check the separate answer key before sharing with students.');selectStep(6);
 }
 async function checkEngine(){
   $('check-engine').disabled=true;
-  try{const data=await request('/api/health');engine=data.engine;if(!engine||!Array.isArray(engine.languages))throw Error('The local service did not return a voice-engine status.');$('engine-dot').className='engine-dot '+(engine.available?'ready':'unavailable');$('engine-message').textContent=`${engine.available?'Offline neural files installed':'Offline neural files unavailable'} · ${engine.name||'Local neural speech'}. ${engine.message||'The first generation loads the model. CPU generation can be slow; review audio before sharing.'}`;}
+  try{const data=await request('/api/health');engine=$('speech-provider').value==='elevenlabs'?{name:'ElevenLabs v3',available:true,languages:['en','ur'],message:'Cloud selected; key, voice, consent and credits checked on generation.'}:data.engine;if(!engine||!Array.isArray(engine.languages))throw Error('The local service did not return a voice-engine status.');$('engine-dot').className='engine-dot '+(engine.available?'ready':'unavailable');$('engine-message').textContent=`${engine.available?'Speech engine available':'Speech engine unavailable'} · ${engine.name||'Local neural speech'}. ${engine.message||'The first generation loads the model. CPU generation can be slow; review audio before sharing.'}`;}
   catch(e){engine=null;$('engine-dot').className='engine-dot unavailable';$('engine-message').textContent=e.message;}
   finally{$('check-engine').disabled=busy;updateSummary();}
 }
@@ -153,10 +155,10 @@ async function sample(language){
 function selectTab(name){for(const tab of ['sections','questions']){const selected=tab===name;$('tab-'+tab).setAttribute('aria-selected',String(selected));$('tab-'+tab).tabIndex=selected?0:-1;$(tab+'-panel').hidden=!selected;}}
 $('lesson-title').addEventListener('input',()=>{project.title=$('lesson-title').value;changed();});
 $('lesson-text').addEventListener('input',()=>{sourceText=$('lesson-text').value;$('source-count').textContent=`${Array.from(sourceText).length.toLocaleString()} / 20,000`;changed();});
-$('language').addEventListener('change',()=>{project.language=$('language').value;clearVoicePreview();$('language-note').textContent=project.language==='ur'?'Use native-script Urdu. Neural pronunciation varies; listen before sharing. No automatic translation.':'Offline neural speech. Install the model once, then generate on your own computer. CPU generation can take several minutes.';changed(true);});
+$('language').addEventListener('change',()=>{project.language=$('language').value;clearVoicePreview();$('language-note').textContent=project.language==='ur'?'Use native-script Urdu. Neural pronunciation varies; listen before sharing. No automatic translation.':'Offline uses 64 synthesis steps for quality; CPU generation can take several minutes. Optional paid mode uses the API settings above.';changed(true);});
 $('rate').addEventListener('input',()=>{project.rate=Number($('rate').value);$('rate-value').textContent=project.rate;clearVoicePreview();changed(true);});
 $('voice').addEventListener('change',()=>{project.voice=$('voice').value;clearVoicePreview();changed(true);});
-$('preview-voice').addEventListener('click',()=>run(async()=>{const stamp=revision;status('Generating a short voice sample locally… CPU generation may take several minutes.');const blob=await request('/api/voice-preview',{language:project.language,rate:project.rate,voice:project.voice},'blob');if(stamp!==revision)throw Error('Voice settings changed. Please preview again.');if(!blob.size||!blob.type.startsWith('audio/'))throw Error('No valid voice preview was returned.');clearVoicePreview();voicePreviewUrl=URL.createObjectURL(blob);$('voice-preview-player').src=voicePreviewUrl;$('voice-preview-player').hidden=false;status('Voice sample ready. Press play to listen; review the pronunciation yourself.');}));
+$('preview-voice').addEventListener('click',()=>run(async()=>{const stamp=revision;status('Generating a sample with the selected engine…');const blob=await request('/api/voice-preview',{language:project.language,rate:project.rate,voice:project.voice},'blob');if(stamp!==revision)throw Error('Voice settings changed. Please preview again.');if(!blob.size||!blob.type.startsWith('audio/'))throw Error('No valid voice preview was returned.');clearVoicePreview();voicePreviewUrl=URL.createObjectURL(blob);$('voice-preview-player').src=voicePreviewUrl;$('voice-preview-player').hidden=false;status('Voice sample ready. Press play to listen; review the pronunciation yourself.');}));
 $('sample-en').addEventListener('click',()=>sample('en'));$('sample-ur').addEventListener('click',()=>sample('ur'));
 $('split').addEventListener('click',()=>{if(project.sections.length&&!confirm('Replace existing chapters with the current teaching notes? Their generated audio will be discarded.'))return;run(async()=>{const data=await request('/api/segment',{text:sourceText});disposeAll();project.sections=data.sections;if(!project.title.trim())project.title='Untitled lesson';changed();render();selectTab('sections');selectStep(2);status(`${project.sections.length} editable chapters created. Review them before generating audio.`);});});
 $('add-section').addEventListener('click',()=>{if(busy||project.sections.length>=24)return;project.sections.push({id:'chapter-'+crypto.randomUUID(),title:`Chapter ${project.sections.length+1}`,text:''});changed();renderChapters();const input=$('text-'+project.sections.at(-1).id);input.focus();});
@@ -170,11 +172,11 @@ $('draft-file').addEventListener('change',async event=>{const file=event.target.
 $('clear-draft').addEventListener('click',()=>{if(busy||!confirm('Clear the saved lesson from this browser and discard generated audio? Downloaded files are kept.'))return;disposeAll();project=fresh();sourceText='';revision++;storageLocked=false;try{localStorage.removeItem(STORAGE);}catch{}clearError();render();status('Draft cleared from this browser.');});
 for(const name of ['sections','questions']){$('tab-'+name).addEventListener('click',()=>selectTab(name));$('tab-'+name).addEventListener('keydown',event=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(event.key)){event.preventDefault();const next=event.key==='Home'?'sections':event.key==='End'?'questions':name==='sections'?'questions':'sections';selectTab(next);$('tab-'+next).focus();}});}
 const flowDescriptions=[
-  ['WRITE','Paste teacher-written text in English or Urdu. Your draft is saved in this browser; no lesson is sent to a cloud AI service.'],
+  ['WRITE','Paste teacher-written text in English or Urdu. Your draft is saved in this browser; cloud speech receives spoken text only when selected.'],
   ['SPLIT','The local server separates paragraphs into chapters of up to 1,500 characters. You can edit every chapter before it is spoken.'],
   ['EDIT','Choose the title, chapter text, language and pace. Add your own questions and answers. LessonVoice does not generate or verify teaching content.'],
   ['PRONOUNCE','Exact written terms are replaced only in the spoken version. You can inspect the resulting text; the original transcript is preserved.'],
-  ['GENERATE','After a one-time model installation, the local neural speech engine produces a real WAV file for each chapter. Choose a preset voice character; no cloud speech service or personal voice cloning is used. CPU generation can be slow.'],
+  ['GENERATE','After a one-time model installation, the local neural speech engine produces a real WAV file for each chapter. Choose a preset voice character; optional paid cloud speech is available in settings. CPU generation can be slow.'],
   ['LISTEN','Play each chapter and review pronunciation. If spoken text, language, pace or voice character changes, the old audio becomes unavailable until regenerated.'],
   ['EXPORT','The server validates the current audio and bundles WAV files, original and spoken transcripts, questions, a separate answer key and an offline player in one ZIP.']
 ];
@@ -189,3 +191,5 @@ async function restore(){
   render();await checkEngine();
 }
 render();restore();
+
+for(const id of ['speech-provider','cloud-key','cloud-voice','cloud-consent'])$(id).addEventListener('change',()=>{disposeAll();revision++;refreshAudio();$('cloud-fields').hidden=$('speech-provider').value!=='elevenlabs';checkEngine();});

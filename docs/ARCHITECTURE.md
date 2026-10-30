@@ -29,3 +29,8 @@ Host/Origin checks protect the loopback API. Fixed routes prevent arbitrary file
 Health reports file/runtime availability, not successful inference or pronunciation quality. A recorded eight-sample English/Urdu CPU probe produced 2.49–4.07 seconds of audio in 18.65–35.34 seconds per sample. Its socket-denial probe recorded zero attempted connections. These are observations for those short samples on the tested machine, not throughput or universal privacy guarantees.
 
 Restarting preserves browser text but requires audio regeneration. Export draft JSON before upgrades. Restore the source, matching lockfile and local model revision to roll back; do not rely on a different environment's unpinned packages. Other operating systems, GPUs and all-device compatibility have not been established by these measurements.
+
+
+## 30 October 2026 speech update
+
+Offline remains the default. Local OmniVoice now uses 64 synthesis steps. Audio/voice-preview requests may include a separate `speech` object: `{provider:"elevenlabs", apiKey:"...", voiceId:"...", consent:true}`. This explicitly sends spoken text to the fixed ElevenLabs HTTPS endpoint using eleven_v3 and pcm_24000. Credentials are request-scoped, excluded from project/draft/export metadata and never logged. Missing/invalid settings are rejected; no automatic cloud fallback exists. Previous offline review statements apply to offline mode only. Paid synthesis still requires account credits and live validation with a funded key. See README.

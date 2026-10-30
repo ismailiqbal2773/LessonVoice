@@ -39,6 +39,18 @@ def entries(p):
 
 
 class ProjectTests(unittest.TestCase):
+    def test_cloud_export_provenance_excludes_credentials(self):
+        p = project()
+        data = core.export_pack(p, entries(p), {'provider':'elevenlabs','voiceId':'publicVoice','apiKey':'private-secret'})
+        with zipfile.ZipFile(BytesIO(data)) as archive:
+            manifest = json.loads(archive.read('manifest.json'))
+            self.assertEqual(manifest['speechSource']['model'], 'eleven_v3')
+            self.assertEqual(manifest['speechSource']['voiceId'], 'publicVoice')
+            for name in archive.namelist():
+                self.assertNotIn(b'private-secret', archive.read(name))
+        with self.assertRaises(ValueError):
+            core.export_pack(p, entries(p), {'provider':'unknown'})
+
     def test_canonical_validation_no_mutation_or_private_fields(self):
         p = project(); p["title"] = "  Plants\r\nlesson  "; p["private"] = "C:/private"
         before = deepcopy(p); clean = core.validate_project(p)

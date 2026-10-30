@@ -177,7 +177,7 @@ def validate_wav(data: bytes) -> dict:
         raise ValueError("Audio could not be read as a valid PCM WAV. Generate it again.") from exc
 
 
-def export_pack(raw_project: Any, raw_audio: Any) -> bytes:
+def export_pack(raw_project: Any, raw_audio: Any, speech_source=None) -> bytes:
     project = validate_project(raw_project)
     audio_items = _list(raw_audio, "Audio files", MAX_SECTIONS)
     expected = {s["id"]: s for s in spoken_sections(project)}
@@ -216,6 +216,16 @@ def export_pack(raw_project: Any, raw_audio: Any) -> bytes:
                 "pronunciations": project["pronunciations"], "sections": [],
                 "questions": project["questions"],
                 "notice": "Synthetic speech. Teacher review required. This ZIP includes an answer key. The signatures bind text/settings to supplied audio metadata, not speech-recognition verification."}
+    if speech_source is not None:
+        if not isinstance(speech_source, dict) or speech_source.get('provider') not in ('local', 'elevenlabs'):
+            raise ValueError('Invalid speech source.')
+        provider = speech_source['provider']
+        voice_id = speech_source.get('voiceId', '')
+        if not isinstance(voice_id, str) or len(voice_id) > 100 or any(c not in 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-' for c in voice_id):
+            raise ValueError('Invalid speech source voice ID.')
+        manifest['speechSource'] = {'provider':provider, 'model':'eleven_v3' if provider == 'elevenlabs' else 'OmniVoice',
+                                    'voiceId':voice_id if provider == 'elevenlabs' else project['voice'],
+                                    'notice':'User-supplied generation metadata; not an audio identity attestation.'}
     output = BytesIO()
     with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_DEFLATED) as archive:
         for index, section in enumerate(project["sections"], 1):

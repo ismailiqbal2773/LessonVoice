@@ -120,14 +120,18 @@ class Handler(BaseHTTPRequestHandler):
                 if self.path == "/api/spoken":
                     return self.reply(200, {"sections": spoken_sections(project)})
                 if self.path == "/api/export":
-                    return self.reply(200, export_pack(project, obj.get("audio")), "application/zip", filename="lessonvoice-pack.zip")
+                    return self.reply(200, export_pack(project, obj.get("audio"), obj.get("speechSource")), "application/zip", filename="lessonvoice-pack.zip")
                 section_id = obj.get("sectionId")
                 sections = {s["id"]: s["text"] for s in spoken_sections(project)}
                 if not isinstance(section_id, str) or section_id not in sections:
                     raise ValueError("Select a valid section to generate.")
                 spoken = sections[section_id]
                 settings = project
-            engine = engine_status()
+            cloud = obj.get("speech", {})
+            provider = cloud.get("provider", "local") if isinstance(cloud, dict) else None
+            if provider not in ("local", "elevenlabs"):
+                raise ValueError("Choose local or ElevenLabs speech.")
+            engine = {"available": True, "languages": ["en", "ur"]} if provider == "elevenlabs" else engine_status()
             if not engine.get("available"):
                 return self.reply(503, {"error": engine.get("message", "This language is not available in the installed local speech engine.")})
             if settings["language"] not in engine.get("languages", []):
@@ -135,7 +139,11 @@ class Handler(BaseHTTPRequestHandler):
             if not _synthesis_lock.acquire(blocking=False):
                 return self.reply(503, {"error": "Another section is generating. Wait for it to finish and try again."})
             try:
-                audio = synthesise(spoken, settings["language"], settings["rate"], settings["voice"])
+                if provider == "elevenlabs":
+                    from .cloud_tts import synthesise as cloud_render
+                    audio = cloud_render(spoken, settings["language"], settings["rate"], cloud)
+                else:
+                    audio = synthesise(spoken, settings["language"], settings["rate"], settings["voice"])
                 validate_wav(audio)
             finally:
                 _synthesis_lock.release()
@@ -145,7 +153,7 @@ class Handler(BaseHTTPRequestHandler):
         except TimeoutError:
             return self.reply(503, {"error": "Audio generation timed out. Try a shorter section."})
         except RuntimeError:
-            return self.reply(503, {"error": "The local speech engine could not generate audio. Check its setup and try a shorter section."})
+            return self.reply(503, {"error": "The selected speech engine could not generate audio. For paid mode check API key permissions, voice access, credits and network. For offline mode check installation or try a shorter section."})
         except Exception:
             return self.reply(500, {"error": "Processing failed. Check the local speech setup and try again."})
 

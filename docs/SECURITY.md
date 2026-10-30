@@ -40,3 +40,8 @@ Inspection found no explicit LSTM/unpack_sequence/JIT calls in the application's
 - Before expanding beyond this demonstration: resolve the remaining advisories on a compatible supported runtime, produce a fresh full dependency report, review actual advisory prerequisites against the inference graph, and add authentication/resource isolation appropriate to that deployment.
 
 If a vulnerability is found, stop running the affected copy and report the affected version, route/operation, and a minimal reproduction to the repository maintainer without posting private lesson content or executable malicious artifacts in public issues.
+
+
+## 30 October 2026 speech update
+
+Offline remains the default. Local OmniVoice now uses 64 synthesis steps. Audio/voice-preview requests may include a separate `speech` object: `{provider:"elevenlabs", apiKey:"...", voiceId:"...", consent:true}`. This explicitly sends spoken text to the fixed ElevenLabs HTTPS endpoint using eleven_v3 and pcm_24000. Credentials are request-scoped, excluded from project/draft/export metadata and never logged. Missing/invalid settings are rejected; no automatic cloud fallback exists. Previous offline review statements apply to offline mode only. Paid synthesis still requires account credits and live validation with a funded key. See README.

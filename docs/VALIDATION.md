@@ -18,3 +18,15 @@ Engineering, QA and independent security review were executed on Windows/Python3
 `node --check web/app.js`
 
 Install using README, launch server, generate English/Urdu samples, play before exporting. Keep offline weights separate from source; no real pupil data used in demos.
+
+
+## 30 October 2026 update
+
+- 55 automated tests pass (50 existing + 4 cloud adapter tests + 1 export privacy test). JavaScript syntax check passes. Cloud tests mock the provider; they are not live paid synthesis.
+- Actual Chrome UI produced a 5.32s English warm-female WAV and a 2.28s Urdu clear-male WAV with the 64-step worker. Native audio decoded at readyState 4. Urdu Play changed to pause, then playback reached its end. Both ZIP exports were downloaded and inspected: CRC clean, expected player/transcripts/questions/answer key/manifest and mono 24kHz PCM audio present.
+- Paid settings expose provider, password field, voice ID and explicit consent. Provider change removes prior audio and disables ZIP export. A second simultaneous generation received a busy error. Funded paid synthesis has NOT been tested; no real API key was supplied.
+- One browser download-event wait timed out and reset the automation session; the actual exported ZIP was found and validated on disk. This was not a synthesis failure.
+- [English sample](samples/quality64-en.wav) / [Urdu sample](samples/quality64-ur.wav) are actual browser-generated 64-step output. English text: “Water changes into vapour when the sun warms it. This process is called evaporation.” Urdu text: “پودوں کو پانی اور روشنی چاہیے۔” No listener score, intelligibility benchmark or claim of human-indistinguishable speech is established. Raising steps is a quality-oriented configuration change, not a measured naturalness win against other models.
+- Previous independent security review predates paid mode. Known upstream advisories and local noncommercial demo restrictions still apply.
+
+- Additional current browser checks: teacher question/answer entry, Urdu pronunciation replacement (“پانی” → “صاف پانی”) in spoken-text preview, missing paid API key error, draft restoration on reload and reset to local provider with empty key. Phone-width measurement (390px) showed no horizontal overflow. Tablet screenshot capture was interrupted; previous tablet evidence is dated above, not recertified here.

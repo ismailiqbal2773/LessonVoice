@@ -56,7 +56,7 @@ def main():
                 torch.manual_seed(seed)
                 with torch.inference_mode():
                     audio = model.generate(text=text,language=language,instruct=instruct,speed=rate/150,
-                                           generation_config=OmniVoiceGenerationConfig(num_step=32))[0]
+                                           generation_config=OmniVoiceGenerationConfig(num_step=64))[0]
                 audio = np.asarray(audio,dtype=np.float32).reshape(-1)
                 if not np.all(np.isfinite(audio)) or not 1200<=len(audio)<=24000*210:
                     raise ValueError('Invalid audio output')
